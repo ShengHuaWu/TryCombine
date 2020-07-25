@@ -9,6 +9,9 @@ import Combine
  
  The sink operator will continue to receive as many values as the publisher emits.
  */
+
+var subscriptions: Set<AnyCancellable> = []
+
 public func chapter2() {
     example(of: "Publisher") {
         let center = NotificationCenter.default
@@ -31,5 +34,53 @@ public func chapter2() {
             receiveValue: {
                 print("Received value", $0)
         })
+    }
+    
+    example(of: "Custom Subscriber") {
+        let publisher = (1...6).publisher
+        
+        final class IntSubscriber: Subscriber {
+            typealias Input = Int
+            typealias Failure = Never
+            
+            func receive(subscription: Subscription) {
+                subscription.request(.max(3))
+            }
+            
+            func receive(_ input: Int) -> Subscribers.Demand {
+                print("Received value", input)
+                return .none
+            }
+            
+            func receive(completion: Subscribers.Completion<Never>) {
+                // You did not receive a completion event.
+                // This is because the publisher has a finite number of values,
+                // and you specified a demand of .max(3).
+                print("Received completion", completion)
+            }
+        }
+        
+        let subscriber = IntSubscriber()
+        publisher.subscribe(subscriber)
+    }
+    
+    example(of: "Future") {
+        func futureIncrement(
+            integer: Int,
+            afterDelay delay: TimeInterval) -> Future<Int, Never> {
+            Future<Int, Never> { promise in
+                DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+                    promise(.success(integer + 1))
+                }
+            }
+        }
+        
+        let future = futureIncrement(integer: 1, afterDelay: 3)
+        
+        future
+            .sink(
+                receiveCompletion: { print($0) },
+                receiveValue: { print($0) })
+            .store(in: &subscriptions)
     }
 }
