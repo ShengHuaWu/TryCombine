@@ -12,9 +12,9 @@ import Combine
  A subscriber may increase the demand for values each time it receives a value, but it cannot decrease demand.
  */
 
-var subscriptions: Set<AnyCancellable> = []
-
 public func chapter2() {
+    var subscriptions: Set<AnyCancellable> = []
+    
     example(of: "Publisher") {
         let center = NotificationCenter.default
         let myNotification = Notification.Name("MyNotification")
