@@ -9,3 +9,4 @@ var subscriptions: Set<AnyCancellable> = []
 //chapter5()
 //chapter10()
 //chapter11()
+chapter12()
